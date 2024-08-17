@@ -428,13 +428,14 @@ again, just paste that inside and save it.
 ```
 [Unit]
 Description=WireGuard VPN Service
-After=network-online.target nss-lookup.target wai>Before=kodi.service
+After=network-online.target nss-lookup.target wait-time-sync.service connman-vpn.service
+Before=kodi.service
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
 ExecStart=/storage/.config/wireguard/connectVPN.sh
-ExecStop=/storage/.config/wireguard/disconnectVPN>
+ExecStop=/storage/.config/wireguard/disconnectVPN.sh
 
 [Install]
 WantedBy=multi-user.target
