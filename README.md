@@ -14,7 +14,7 @@ the only problem that I'm currently aware of is that the CEC is not working on s
 
 # Server setup
 
-I assume you have a server with at least 16 Gb of RAM and at least 2TB of storage with portainer installed (if not, read this : )
+I assume you have a server with at least 16 Gb of RAM and at least 2TB of storage with portainer installed (and a static IP address of a domain name with dynDNS) (if not, read this : https://github.com/nathmo/Quartz64_NAS)
 
 this is the config that you can paste into portainer.
 the things you might want to know about / tune :
@@ -23,6 +23,20 @@ the things you might want to know about / tune :
 `/terapool/media/` is the path to another folder the server with sufficient storage (2-20TB) were the video file will be stored. if your folder has another name, please replace it everywhere in the config.
 `192.168.7.0/24` is the subnet for the stack network. MAKE SURE IT'S NOT THE SAME AS YOUR LOCAL NETWORK (usually 192.168.1.0/24), if you edit it, you also need to change it for each container.
 
+here is a table with the port and IP address of each container. (if you access the services over the VPN, you need to specify the IP from the table. if you want to access it directly from your LAN. use the IP of the server where docker is running (192.168.1.10 for instance)
+
+| Title         | Port      | URL                           |
+|---------------|-----------|-------------------------------|
+| jellyfin      | 8096      | http://192.168.7.3:8096/      |
+| sonarr        | 8989      | http://192.168.7.4:8989/      |
+| radarr        | 7878      | http://192.168.7.5:7878/      |
+| bazarr        | 6767      | http://192.168.7.6:6767/      |
+| jellyseerr    | 5055      | http://192.168.7.7:5055/      |
+| jackett       | 9117      | http://192.168.7.8:9117/      |
+| transmission  | 9091      | http://192.168.7.9:9091/      |
+| tdarr         | 8265      | http://192.168.7.10:8265/     |
+| tdarr-node    | N/A       | N/A                           |
+| wireguard     | 51820/udp | N/A                           |
 
 once you chose where to store your data we must create each subfolder (replace the path to your folder in theses commands):
 ```
@@ -51,12 +65,14 @@ once done go to portainer and click on Add Stack from then stack menu.
 give it a name (jellyfin media stack for instance) and paste the following content (with your modification for the path) in the Web editor console.
 ![image](https://github.com/user-attachments/assets/08ad4417-e881-4ced-961b-13aa0ba74f64)
 
+this is what you should copy paste. Note the PATHCONTAINER=/pool/container and PATHMEDIA=/terapool/media variable that you should edit if needed.
+
 ```
 version: "3"
 
 PATHCONTAINER=/pool/container
 PATHMEDIA=/terapool/media
-
+SUBNET=192.168.7
 services:
   jellyfin:
     image: linuxserver/jellyfin:latest
@@ -73,16 +89,10 @@ services:
       - ${PATHMEDIA}/music:/data/music
     ports:
       - 8096:8096
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.nas.local`)"
-      - "traefik.http.services.jellyfin.loadbalancer.server.port=8096"
-      - "traefik.http.routers.jellyfin.entrypoints=web"
-      - "traefik-home.alias=jellyfin"
     restart: unless-stopped
     networks:
       wireguard_network:
-        ipv4_address: 192.168.7.3
+        ipv4_address: ${SUBNET}.3
       
   sonarr:
     image: linuxserver/sonarr:latest
@@ -98,16 +108,10 @@ services:
       - ${PATHMEDIA}/complete:/downloads/complete
     ports:
       - 8989:8989
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.sonarr.rule=Host(`sonarr.nas.local`)"
-      - "traefik.http.services.sonarr.loadbalancer.server.port=8989"
-      - "traefik.http.routers.sonarr.entrypoints=web"
-      - "traefik-home.alias=sonarr"
     restart: unless-stopped
     networks:
       wireguard_network:
-        ipv4_address: 192.168.7.4
+        ipv4_address: ${SUBNET}.4
       
   radarr:
     image: linuxserver/radarr:latest
@@ -123,16 +127,10 @@ services:
       - ${PATHMEDIA}/movies:/movies
     ports:
       - 7878:7878
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.radarr.rule=Host(`radarr.nas.local`)"
-      - "traefik.http.services.radarr.loadbalancer.server.port=7878"
-      - "traefik.http.routers.radarr.entrypoints=web"
-      - "traefik-home.alias=radarr"
     restart: unless-stopped
     networks:
       wireguard_network:
-        ipv4_address: 192.168.7.5
+        ipv4_address: ${SUBNET}.5
       
   bazarr:
     image: linuxserver/bazarr:latest
@@ -148,16 +146,10 @@ services:
       - ${PATHMEDIA}/tvshows:/tvshows #optional
     ports:
       - 6767:6767
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.bazarr.rule=Host(`bazarr.nas.local`)"
-      - "traefik.http.services.bazarr.loadbalancer.server.port=6767"
-      - "traefik.http.routers.bazarr.entrypoints=web"
-      - "traefik-home.alias=bazarr"
     restart: unless-stopped
     networks:
       wireguard_network:
-        ipv4_address: 192.168.7.6
+        ipv4_address: ${SUBNET}.6
 
   jellyseerr:
     image: fallenbagel/jellyseerr:develop
@@ -168,12 +160,6 @@ services:
       - TZ=Europe/Rome
     ports:
       - 5055:5055
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.jellyseerr.rule=Host(`jellyseerr.nas.local`)"
-      - "traefik.http.services.jellyseerr.loadbalancer.server.port=5055"
-      - "traefik.http.routers.jellyseerr.entrypoints=web"
-      - "traefik-home.alias=jellyseerr"
     volumes:
       - ${PATHCONTAINER}/jellyseerr:/app/config
     restart: unless-stopped
@@ -182,7 +168,7 @@ services:
       - sonarr
     networks:
       wireguard_network:
-        ipv4_address: 192.168.7.7
+        ipv4_address: ${SUBNET}.7
       
   jackett:
     image: linuxserver/jackett:latest
@@ -198,16 +184,10 @@ services:
       - ${PATHMEDIA}:/downloads
     ports:
       - 9117:9117
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.jackett.rule=Host(`jackett.nas.local`)"
-      - "traefik.http.services.jackett.loadbalancer.server.port=9117"
-      - "traefik.http.routers.jackett.entrypoints=web"
-      - "traefik-home.alias=jackett"
     restart: unless-stopped
     networks:
       wireguard_network:
-        ipv4_address: 192.168.7.8
+        ipv4_address: ${SUBNET}.8
 
   transmission:
     image: linuxserver/transmission
@@ -224,16 +204,10 @@ services:
       - 9091:9091
       - 51413:51413
       - 51413:51413/udp
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.transmission.rule=Host(`transmission.nas.local`)"
-      - "traefik.http.services.transmission.loadbalancer.server.port=9091"
-      - "traefik.http.routers.transmission.entrypoints=web"
-      - "traefik-home.alias=transmission"
     restart: unless-stopped
     networks:
       wireguard_network:
-        ipv4_address: 192.168.7.9
+        ipv4_address: ${SUBNET}.9
       
   tdarr:
     container_name: tdarr
@@ -245,12 +219,6 @@ services:
       - 8266:8266 # server port
       - 8267:8267 # Internal node port
       - 8268:8268 # Example extra node port
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.tdarr.rule=Host(`tdarr.nas.local`)"
-      - "traefik.http.services.tdarr.loadbalancer.server.port=8265"
-      - "traefik.http.routers.tdarr.entrypoints=web"
-      - "traefik-home.alias=tdarr"
     environment:
       - TZ=Europe/Rome
       - PUID=1000
@@ -271,7 +239,7 @@ services:
       - /dev/dri:/dev/dri
     networks:
       wireguard_network:
-        ipv4_address: 192.168.7.10
+        ipv4_address: ${SUBNET}.10
 
   tdarr-node:
     mem_limit: 1500m
@@ -293,7 +261,7 @@ services:
       - ${PATHCONTAINER}/tdarr/transcode:/temp
     networks:
       wireguard_network:
-        ipv4_address: 192.168.7.11
+        ipv4_address: ${SUBNET}.11
         
   wireguard:
     image: archef2000/pivpn:latest
@@ -319,7 +287,7 @@ services:
     restart: always
     networks:
       wireguard_network:
-        ipv4_address: 192.168.7.2
+        ipv4_address: ${SUBNET}.2
 
 
 networks:
@@ -331,7 +299,154 @@ networks:
         - subnet: 192.168.7.0/24 # Adjust the subnet as needed
 ```
 
+once this is done you should just go to your router and expose your public port 51820 to the host running the container so that external people can access your jellyfin over the VPN.
 
+now to create VPN config to share to your friend / use in the next part of this tutorial do the following :
+
+click on the shell icon of the pivpn container from the container list.
+![image](https://github.com/user-attachments/assets/bf4dcb79-6f06-489b-a921-19ae0c1cdfe4)
+click connect
+![image](https://github.com/user-attachments/assets/0ff88913-0abc-4164-9de2-cb306425326b)
+
+then to create new config execute the following command : 
+`pivpn -a -n theNameOfTheClient`
+
+![image](https://github.com/user-attachments/assets/863a16c9-a5bf-49f3-8153-dec682caa7a6)
+
+
+then run `cat config/theNameOfTheClient.conf`
+and copy paste the config in wireguard / a textfile with the .conf exitention that you can import into wireguard.
 
 # Client setup
+
+you need a raspberry pi with a powersupply, HDMI cable /micro HDMI and a micro SD card.
+
+install Raspberry Pi imager (https://www.raspberrypi.com/software/) if you dont have it.
+
+then select the raspberry pi model (RPI 4 in my case)
+
+for the OS, go under the Media player OS and Select LibreELEC 
+![image](https://github.com/user-attachments/assets/ae75a90a-9be0-4f32-b63d-ffd0f1cc09d5)
+
+the select your SD card and click next.
+
+now plug the SD card in your raspberry pi, connect it to your TV and power it.
+(if the remote of your tv fail to control the raspberry pi, use a USB keyboard for the setup)
+
+now you can do the innitial setup
+
+you can install the jellyfin addon
+
+once the innitial config is done and SSH enable, we can connect to it.
+`ssh root@192.168.1.16`
+![image](https://github.com/user-attachments/assets/85247ef3-dc93-4990-bd97-a31c433ae646)
+
+now we need to setup the VPN access on the raspberry pi so you can gift it to friend/family and they can use it out of the box with no tech skill required.
+
+you need to make a VPN config as explained earlier and copy paste it into a text editor.
+the config should look something like this :
+```
+
+[Interface]
+PrivateKey = MYPRIVATEKEY
+Address = MY_ADDRESS_ON_THE_VPN
+DNS = 1.1.1.1, 9.9.9.9
+
+[Peer]
+PublicKey = MYPUBLICKEY
+PresharedKey = MYPRESHAREDKEY
+Endpoint = MYDOMAIN:51820
+AllowedIPs = 0.0.0.0/0, ::0/0
+PersistentKeepalive = 25
+```
+
+first create the VPN config
+`nano .config/wireguard/wireguard.config.original`
+then copy this content inside that file and modify the required field
+```
+[provider_wireguard]
+Type = WireGuard
+Name = WireGuard VPN Tunnel
+Host = MYDOMAIN
+WireGuard.Address = MY_ADDRESS_ON_THE_VPN
+WireGuard.ListenPort = 51820
+WireGuard.PrivateKey = MYPRIVATEKEY
+WireGuard.PublicKey = MYPUBLICKEY
+WireGuard.PresharedKey = MYPRESHAREDKEY
+WireGuard.DNS = 9.9.9.9, 1.1.1.1
+WireGuard.AllowedIPs = 0.0.0.0/0
+WireGuard.EndpointPort = 51820
+WireGuard.PersistentKeepalive = 25
+```
+
+then you can add this script : (do not forget to replace MYDOMAIN by your domain/STATIC IP address)
+`nano .config/wireguard/connectVPN.sh`
+```
+#!/bin/bash
+
+#wait 10s for network... any ideas on how to fix this? :/
+sleep 10
+
+#resolve hostname to ip and save it in config file
+SERVER_HOST="MYDOMAIN"
+SERVER_IP=$(getent hosts $SERVER_HOST | awk '{ print $1 }')
+echo "Server host: $SERVER_HOST"
+echo "Resolved server ip: $SERVER_IP"
+sed "s/$SERVER_HOST/$SERVER_IP/g" /storage/.config/wireguard/wireguard.config.original > /storage/.config/wireguard/wireguard.config
+
+#wait 1 sec for network name to be available
+sleep 1
+
+#list connections and select the one with Wireguard in name/description
+VPN_CONNECTION_NAME=$(connmanctl services | grep 'WireGuard' | awk -F' ' '{print $NF}')
+echo "VPN connection name: $VPN_CONNECTION_NAME"
+
+#connect to VPN
+connmanctl connect $VPN_CONNECTION_NAME
+```
+you can add this script :
+
+`nano .config/wireguard/disconnectVPN.sh`
+
+```
+#!/bin/bash
+
+#list connections and select the one with Wireguard in description
+VPN_CONNECTION_NAME=$(connmanctl services | grep 'WireGuard' | awk -F' ' '{print $NF}')
+echo "VPN connection name: $VPN_CONNECTION_NAME"
+
+#connect to VPN
+connmanctl disconnect $VPN_CONNECTION_NAME
+```
+run `chmod +x /storage/.config/wireguard/con
+nectVPN.sh` and `chmod +x /storage/.config/wireguard/discon
+nectVPN.sh` to make the script executable.
+
+now we create the service that will run the VPN whenever the PI boot :
+`nano .config/system.d/wireguard.service`
+
+again, just paste that inside and save it.
+```
+[Unit]
+Description=WireGuard VPN Service
+After=network-online.target nss-lookup.target wai>Before=kodi.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/storage/.config/wireguard/connectVPN.shExecStop=/storage/.config/wireguard/disconnectVPN>
+
+[Install]
+WantedBy=multi-user.target
+```
+
+run theses three command and you are set.
+`systemctl enable /storage/.config/syste
+m.d/wireguard.service`
+
+`systemctl start wireguard.service`
+
+`systemctl status wireguard.service`
+
+you can test the connection by pinging the container on ${SUBNET}.3 (replace what you set for SUBNET in the server section)
 
