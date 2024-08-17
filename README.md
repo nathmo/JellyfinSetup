@@ -418,9 +418,8 @@ echo "VPN connection name: $VPN_CONNECTION_NAME"
 #connect to VPN
 connmanctl disconnect $VPN_CONNECTION_NAME
 ```
-run `chmod +x /storage/.config/wireguard/con
-nectVPN.sh` and `chmod +x /storage/.config/wireguard/discon
-nectVPN.sh` to make the script executable.
+run `chmod +x /storage/.config/wireguard/connectVPN.sh` and 
+`chmod +x /storage/.config/wireguard/disconnectVPN.sh` to make the script executable.
 
 now we create the service that will run the VPN whenever the PI boot :
 `nano .config/system.d/wireguard.service`
@@ -434,19 +433,21 @@ After=network-online.target nss-lookup.target wai>Before=kodi.service
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/storage/.config/wireguard/connectVPN.shExecStop=/storage/.config/wireguard/disconnectVPN>
+ExecStart=/storage/.config/wireguard/connectVPN.sh
+ExecStop=/storage/.config/wireguard/disconnectVPN>
 
 [Install]
 WantedBy=multi-user.target
 ```
 
 run theses three command and you are set.
-`systemctl enable /storage/.config/syste
-m.d/wireguard.service`
+`systemctl enable /storage/.config/system.d/wireguard.service`
 
 `systemctl start wireguard.service`
 
 `systemctl status wireguard.service`
 
-you can test the connection by pinging the container on ${SUBNET}.3 (replace what you set for SUBNET in the server section)
+you can test the connection by pinging the container on ${SUBNET}.3 (replace what you set for SUBNET in the server section) `ping 192.168.7.3`
+
+
 
