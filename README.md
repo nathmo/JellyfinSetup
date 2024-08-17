@@ -1,5 +1,5 @@
 # Introduction
-This tutorial contains instruction to install your own video streaming server using jellyfin and instruction to create TV "topBox" using a raspberry pi they can plug in their TV to access all your videos that you can distribute to your less tech savy family and friends :)
+This tutorial contains instruction to install your own video streaming server using jellyfin and instruction to create TV "topBox" using a raspberry pi 4 they can plug in their TV to access all your videos that you can distribute to your less tech savy family and friends :)
 # Feature list
 - Docker stack (run on your own server)
 - Jellyfin (for the video streaming)
@@ -10,7 +10,8 @@ This tutorial contains instruction to install your own video streaming server us
 - kodi client on a raspberry pi (with wireguard support and jellyfin client)
 
 # Caveat
-the only problem that I'm currently aware of is that the CEC is not working on some of my TV so you need your smartphone to control kodi/the raspberry pi
+the first problem that I'm currently aware of is that the CEC is not working on some of my TV so you need your smartphone to control kodi/the raspberry pi
+the second is that this tutorial only work with a raspberry pi 4 (not a raspberry pi 3) (RPI 5 is untested)
 
 # Server setup
 
@@ -335,7 +336,55 @@ now plug the SD card in your raspberry pi, connect it to your TV and power it.
 
 now you can do the innitial setup
 
-you can install the jellyfin addon
+![image](https://github.com/user-attachments/assets/5a47c60f-ad3b-4aaf-a321-67ff7ad5bda2)
+feel free to change the hostname to something different
+![image](https://github.com/user-attachments/assets/11c81f70-85de-4541-9b88-43d63db9f382)
+configure the network. (for ease of configuration you can set a static IP address but ensure it not occupied by something else)
+![image](https://github.com/user-attachments/assets/1b8b125d-587c-4f6f-92d8-b575795505d0)
+![image](https://github.com/user-attachments/assets/0011c2fe-66b9-49cf-a6dc-c1a50cca687f)
+![image](https://github.com/user-attachments/assets/cdcd2dc7-1b2f-44f1-9666-61e7671a803d)
+![image](https://github.com/user-attachments/assets/991d560c-e5c5-464d-97fa-b45228b4cbb3)
+
+then you want to enable SSH and SMB (SSH is required in the next step)
+
+![image](https://github.com/user-attachments/assets/4b2bb500-f905-4713-bf88-5588e8d26823)
+
+![image](https://github.com/user-attachments/assets/dda4bb12-2996-41d0-88d8-c66f547facf9)
+
+(make sure that the password is what you expect. the default keyboard layout is US so double check)
+
+now we can install jellyfin client :
+first we add the jellyfin repo 
+![image](https://github.com/user-attachments/assets/619730ab-d22a-411a-acc0-b74117e22776)
+
+![image](https://github.com/user-attachments/assets/ab4e7043-87dd-4d28-b6ee-8210248c4e4f)
+click enter when <None> is selected and enter the following URL : 
+![image](https://github.com/user-attachments/assets/f2d8af31-94d3-4f03-a892-fd4f912951e0)
+`https://kodi.jellyfin.org`
+![image](https://github.com/user-attachments/assets/2f477c95-17d6-4ef9-a2b0-95e3ebef60b0)
+dont mix up the name with the url. the name can be anything. set it to jellyfin or something like that
+![image](https://github.com/user-attachments/assets/aa476e4e-ae1b-4642-b32b-0f658c52dcfc)
+
+
+now you can go to the addond manager in the settings :
+
+![image](https://github.com/user-attachments/assets/f4f52dcb-1cce-4f8a-ae53-59e4ccafa14e)
+and install the repository from a ZIP file
+![image](https://github.com/user-attachments/assets/2f255880-a74b-4384-a8a3-ab925829be72)
+
+modify the settings regarding the zip plugins
+
+![image](https://github.com/user-attachments/assets/6d24caba-a04c-4509-8232-ab91799b303e)
+
+![image](https://github.com/user-attachments/assets/94fb6c0b-086d-4b24-949b-0c13dadb0cdf)
+
+now you can come back to the menu and install jellyfin as a normal plugin 
+
+![image](https://github.com/user-attachments/assets/f10b9d15-f8af-4604-979f-3f12e8e77eee)
+![image](https://github.com/user-attachments/assets/a588a1d8-f6e7-43c1-8aa9-d852e77c1895)
+![image](https://github.com/user-attachments/assets/00f48b7b-fe12-4ddd-8e66-4e48d92bedbc)
+![image](https://github.com/user-attachments/assets/03245ba9-335f-4b12-84d0-c067dbf82090)
+
 
 once the innitial config is done and SSH enable, we can connect to it.
 `ssh root@192.168.1.16`
@@ -449,6 +498,16 @@ run theses three command and you are set.
 `systemctl status wireguard.service`
 
 finally reboot `reboot now` and connect back. You can test the connection by pinging the container on ${SUBNET}.3 (replace what you set for SUBNET in the server section) `ping 192.168.7.3`
+if you have issue pinging, ensure there was no mistake when copy pasting.
+
+now you can add the jellyfin server address
+
+once installed, jellycon will ask you for the server URL
+
+![image](https://github.com/user-attachments/assets/ebbf9fcb-153a-44b6-9810-f21402ff93f0)
+set it the container IP address + port. (don't add a / at the end. if that fail, try with a /)
+![image](https://github.com/user-attachments/assets/761dc952-955a-4670-b179-8a5af31366d5)
+
 
 
 
