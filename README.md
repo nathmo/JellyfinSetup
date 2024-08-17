@@ -448,7 +448,7 @@ run theses three command and you are set.
 
 `systemctl status wireguard.service`
 
-you can test the connection by pinging the container on ${SUBNET}.3 (replace what you set for SUBNET in the server section) `ping 192.168.7.3`
+finally reboot `reboot now` and connect back. You can test the connection by pinging the container on ${SUBNET}.3 (replace what you set for SUBNET in the server section) `ping 192.168.7.3`
 
 
 
