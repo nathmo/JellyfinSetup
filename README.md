@@ -505,9 +505,11 @@ now you can add the jellyfin server address
 once installed, jellycon will ask you for the server URL
 
 ![image](https://github.com/user-attachments/assets/ebbf9fcb-153a-44b6-9810-f21402ff93f0)
-set it the container IP address + port. (don't add a / at the end. if that fail, try with a /)
+set it the container IP address + port. ( http://192.168.7.3:8096 ) (don't add a / at the end)
 ![image](https://github.com/user-attachments/assets/761dc952-955a-4670-b179-8a5af31366d5)
-
+as a last optional step if the HDMI control fail, you can use your smartphone as a remote with app such as kore.
+fo that : go to settings -> Services -> Control -> Allow remote control via HTTP (you might wanto to disable authentication)
+then your smartphone should automatically detect it when kore is launched and allow you to control the pi.
 
 
 
