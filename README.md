@@ -1,5 +1,5 @@
 # Introduction
-This tutorial contains instruction to install your own video streaming server using jellyfin and instruction to create TV "topBox" using a raspberry pi 4 they can plug in their TV to access all your videos that you can distribute to your less tech savy family and friends :)
+This tutorial contains instruction to install your own video streaming server using jellyfin and instruction to create TV "topBox" using a raspberry pi 3 or 4 that can be plugged in a TV to access all your videos that you can distribute to your less tech savy family and friends :)
 # Feature list
 - Docker stack (run on your own server)
 - Jellyfin (for the video streaming)
@@ -11,7 +11,6 @@ This tutorial contains instruction to install your own video streaming server us
 
 # Caveat
 the first problem that I'm currently aware of is that the CEC is not working on some of my TV so you need your smartphone to control kodi/the raspberry pi
-the second is that this tutorial only work with a raspberry pi 4 (not a raspberry pi 3) (RPI 5 is untested)
 
 # Server setup
 
